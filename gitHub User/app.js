@@ -1,43 +1,57 @@
-const input=document.getElementById('userInput');
-const display=document.getElementById('display');
-const getData=()=>{
-    fetch(`https://api.github.com/users/${input.value}`)
-    .then((data)=>data.json())
-    .then((response)=>{
-        display.innerHTML=`<div class="row">
-             <div class="col-lg-3" col-sm-12><img class='profilePic' src="${response.avatar_url}" alt=""></div>
-             <div class="col-lg-9 col-sm-12">
-                 <h3>${response.login}</h3>
-                 <small>@${response.login}</small>
-                 <p>${response.bio}</p>
-                 <div class="m-4 p-3 dark1">
-                     <div class="row">
-                         <div class="col-4">Repos</div>
-                         <div class="col-4">Followers</div>
-                         <div class="col-4">Following</div>
-                     </div>
-                     <div class="row">
-                         <div class="col-4">${response.public_repos}</div>
-                         <div class="col-4">${response.followers}</div>
-                         <div class="col-4">${response.following}</div>
-                     </div>
-                 </div>
-                 <div class="row">
-                     <div class="col-sm-10 col-lg-5 p-1" ><i class="fa-solid fa-location-dot"></i> ${response.location}</div>
-                     <div class="col-sm-10 col-lg-5 p-1"><i class="fa-brands fa-twitter"></i> ${response.twitter_username}</div>
-                 </div>
-                 <div class="row">
-                     <div class="col-sm-10 col-lg-5 p-1"><i class="fa-solid fa-link"></i> ${response.blog}</div>
-                     <div class="col-sm-10 col-lg-5 p-1"><i class="fa-solid fa-building"></i> ${response.company}</div>
-                 </div>
- 
-             </div>
-         </div>`
 
-    })
+const input = document.getElementById('userInput');
+const display = document.getElementById('display');
 
+const getData = () => {
+    const username = input.value.trim();
+    if (!username) {
+        display.innerHTML = `<p class="text-danger text-center">Please enter a username.</p>`;
+        return;
+    }
 
+    fetch(`https://api.github.com/users/${username}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === "Not Found") {
+                display.innerHTML = `<p class="text-danger text-center">User not found. Please try again.</p>`;
+                return;
+            }
 
-}
-
-
+            display.innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <img class="profilePic" src="${data.avatar_url}" alt="${data.login}">
+                        <div class="profile-info">
+                            <h3>${data.name || "N/A"}</h3>
+                            <small>@${data.login}</small>
+                            <p>${data.bio || "No bio available."}</p>
+                        </div>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <p class="stat-title">Repositories</p>
+                            <p class="stat-value">${data.public_repos}</p>
+                        </div>
+                        <div class="stat">
+                            <p class="stat-title">Followers</p>
+                            <p class="stat-value">${data.followers}</p>
+                        </div>
+                        <div class="stat">
+                            <p class="stat-title">Following</p>
+                            <p class="stat-value">${data.following}</p>
+                        </div>
+                    </div>
+                    <div class="details">
+                        <div><i class="fa-solid fa-location-dot"></i> ${data.location || "N/A"}</div>
+                        <div><i class="fa-brands fa-twitter"></i> ${data.twitter_username || "N/A"}</div>
+                        <div><i class="fa-solid fa-link"></i> <a href="${data.blog}" target="_blank">${data.blog || "N/A"}</a></div>
+                        <div><i class="fa-solid fa-building"></i> ${data.company || "N/A"}</div>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(err => {
+            console.error(err);
+            display.innerHTML = `<p class="text-danger text-center">An error occurred. Please try again later.</p>`;
+        });
+};
